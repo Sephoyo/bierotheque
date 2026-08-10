@@ -1,6 +1,11 @@
 FROM php:8.3-cli-alpine
 
-RUN apk add --no-cache postgresql-dev icu-dev \
+# bash : absent de l'image php-alpine par défaut (seul /bin/sh est présent).
+# Nécessaire pour le terminal web de Dokploy (docker exec ... bash) — sans
+# ça, ouvrir un terminal sur ce conteneur échoue avec "exec: bash: no such
+# file or directory". Les scripts du projet (docker-entrypoint.sh) restent
+# en #!/bin/sh et n'en dépendent pas.
+RUN apk add --no-cache bash postgresql-dev icu-dev \
     && docker-php-ext-install pdo_pgsql intl opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
