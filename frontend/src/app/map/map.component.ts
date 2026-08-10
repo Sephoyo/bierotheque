@@ -1,5 +1,11 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, effect, inject } from '@angular/core';
-import * as L from 'leaflet';
+// Import par défaut (pas `import * as L`) : esbuild fige une copie des
+// propriétés de leaflet au moment de l'import namespace, *avant* que
+// 'leaflet.markercluster' ait pu lui ajouter markerClusterGroup — d'où
+// "L.markerClusterGroup is not a function" en prod malgré un build qui
+// passe. L'import par défaut référence l'objet mutable en direct (via
+// l'interop CJS `.default`), qui lui reçoit bien la mutation.
+import L from 'leaflet';
 import 'leaflet.markercluster';
 import { Brewery } from '../models/brewery.model';
 import { FrenchRegion } from '../models/region.model';
