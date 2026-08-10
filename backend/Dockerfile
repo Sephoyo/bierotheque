@@ -13,6 +13,15 @@ RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --opti
 COPY . .
 RUN chmod +x docker-entrypoint.sh
 
+# .env est exclu par .dockerignore (contient les vrais secrets locaux, jamais
+# commité) mais SymfonyRuntime/Dotenv::bootEnv() exige que le fichier existe
+# physiquement, même vide, sinon il lève une PathException fatale au boot —
+# peu importe que APP_ENV/DATABASE_URL/etc. soient déjà fournis en variables
+# d'environnement par Dokploy. On crée donc un .env vide dans l'image ; les
+# vraies valeurs continuent de venir exclusivement des variables
+# d'environnement (elles priment de toute façon sur le contenu de .env).
+RUN touch .env
+
 EXPOSE 8000
 
 # Lance les migrations puis, seulement si la table brewery est vide (première
