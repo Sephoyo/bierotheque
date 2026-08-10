@@ -1,0 +1,19 @@
+# Secrets locaux : jamais dans l'image (les vraies valeurs de prod sont
+# injectées comme variables d'environnement par docker-compose.yml, elles-
+# mêmes lues depuis l'onglet "Environment" du projet Dokploy).
+.env
+.env.dev
+.env.local
+.env.*.local
+
+# Régénérés à l'intérieur du conteneur par le Dockerfile (composer install)
+# et au runtime — inutile et risqué de copier la version locale.
+vendor/
+var/
+
+# Rien à faire dans une image de prod avec l'historique git ou l'IDE.
+.git/
+.gitignore
+.editorconfig
+.idea/
+.vscode/
