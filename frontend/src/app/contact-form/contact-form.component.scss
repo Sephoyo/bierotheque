@@ -1,0 +1,152 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal {
+  position: relative;
+  width: 480px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+}
+
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-hop-brown);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  // Le bouton fermer est en position:absolute en haut à droite ; sans cette
+  // marge, l'onglet "Proposer une brasserie" se retrouve juste dessous/derrière.
+  margin-top: 28px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--color-gold);
+  border-radius: 8px;
+  background: none;
+  color: var(--color-hop-brown);
+  cursor: pointer;
+  font-family: var(--font-body);
+
+  &.active {
+    background: var(--color-gold);
+    color: var(--color-hop-brown);
+    font-weight: 600;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  flex: 1;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+
+  label {
+    min-width: 0;
+  }
+
+  // 3 champs côte à côte (facebook/instagram/twitter) deviennent illisibles
+  // sur mobile : on les empile au lieu de les compresser.
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
+}
+
+input,
+textarea {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-gold);
+  font-family: var(--font-body);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+button[type='submit'] {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-amber);
+  color: var(--color-cream);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.feedback {
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+
+  &--success {
+    background: rgba(74, 46, 26, 0.08);
+    color: var(--color-hop-brown);
+  }
+
+  &--error {
+    background: rgba(180, 40, 40, 0.1);
+    color: #a02020;
+  }
+}
+
+.field-error {
+  color: #a02020;
+  font-size: 0.8em;
+}
+
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: -4px 0 0;
+}

@@ -1,0 +1,29 @@
+// Palette et typographie "bièrothèque" — cf. CLAUDE.md
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&display=swap');
+
+:root {
+  --color-amber: #c68a2e;
+  --color-hop-brown: #4a2e1a;
+  --color-cream: #f5e9d3;
+  --color-gold: #d9a441;
+
+  --font-heading: 'Fraunces', 'Playfair Display', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --shadow-soft: 0 4px 16px rgba(74, 46, 26, 0.18);
+  --radius-parchment: 12px;
+}
+
+.parchment-panel {
+  background: var(--color-cream);
+  border: 1px solid var(--color-gold);
+  border-radius: var(--radius-parchment);
+  box-shadow: var(--shadow-soft);
+  color: var(--color-hop-brown);
+  font-family: var(--font-body);
+
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    color: var(--color-hop-brown);
+  }
+}

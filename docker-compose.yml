@@ -1,0 +1,81 @@
+## Stack de production pour Dokploy : postgres + api (Symfony) + frontend
+## (Angular servi par nginx) + scheduler (ré-import Overpass mensuel).
+##
+## Toutes les variables sensibles/spécifiques à l'environnement sont lues
+## depuis les variables d'environnement du projet Dokploy (onglet
+## "Environment" du projet Compose) — voir .env.example à la racine pour la
+## liste complète et leur description.
+##
+## Aucun port n'est publié sur l'hôte : Dokploy route le trafic vers les
+## services via son propre réseau Traefik. Configurer les domaines depuis le
+## dashboard Dokploy (onglet "Domains" de chaque service) :
+##   - frontend → port conteneur 80
+##   - php      → port conteneur 8000 (si l'API doit être exposée directement,
+##                sinon laisser le frontend seul en public et le reverse-proxy
+##                interne appeler "http://php:8000")
+##
+## Pour un usage local (hors Dokploy), voir README / commandes `ng serve` +
+## `symfony server:start` habituelles ; ce compose est pensé pour la prod.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-bierotheque}"
+      POSTGRES_USER: "${POSTGRES_USER:-app}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD doit être défini}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-bierotheque}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  php:
+    build:
+      context: ./backend
+    environment:
+      APP_ENV: prod
+      APP_SECRET: "${APP_SECRET:?APP_SECRET doit être défini (32 caractères hexadécimaux aléatoires)}"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bierotheque}?serverVersion=16&charset=utf8"
+      CORS_ALLOW_ORIGIN: "${CORS_ALLOW_ORIGIN:?CORS_ALLOW_ORIGIN doit être défini - regex du domaine du frontend, voir .env.example}"
+      OVERPASS_ENDPOINT: "${OVERPASS_ENDPOINT:-https://overpass-api.de/api/interpreter}"
+      OVERPASS_BBOX: "${OVERPASS_BBOX:-41.2,-5.3,51.15,9.7}"
+      ADMIN_USERNAME: "${ADMIN_USERNAME:?ADMIN_USERNAME doit être défini}"
+      ADMIN_PASSWORD_HASH: "${ADMIN_PASSWORD_HASH:?ADMIN_PASSWORD_HASH doit être défini (php bin/console security:hash-password)}"
+      DEFAULT_URI: "${DEFAULT_URI:-https://api.bierotheque.fr}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    # Repris par le service "scheduler" (ofelia) : ré-importe les brasseries
+    # depuis Overpass API une fois par mois, en plus de l'import initial déjà
+    # géré par docker-entrypoint.sh au premier démarrage sur base vide.
+    # Idempotent (dédup par osmId), donc sans risque de doublons.
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.import-breweries.schedule: "@monthly"
+      ofelia.job-exec.import-breweries.command: "php bin/console app:import-breweries"
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      API_BASE_URL: "${API_BASE_URL:?API_BASE_URL doit être défini, ex: https://api.bierotheque.fr/api}"
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  scheduler:
+    image: mcuadros/ofelia:latest
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - php
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

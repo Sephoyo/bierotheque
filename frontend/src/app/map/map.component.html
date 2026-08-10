@@ -1,0 +1,5 @@
+<div #mapContainer class="map-container"></div>
+
+@if (breweryService.error(); as errorMessage) {
+  <div class="map-error">{{ errorMessage }}</div>
+}

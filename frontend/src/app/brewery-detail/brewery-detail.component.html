@@ -1,0 +1,38 @@
+@if (brewery(); as b) {
+  <aside class="drawer parchment-panel">
+    <button type="button" class="close-button" (click)="close()" aria-label="Fermer">&times;</button>
+
+    <h2>{{ b.name }}</h2>
+
+    <p class="address">
+      @if (b.address) {
+        {{ b.address }}<br />
+      }
+      {{ b.postalCode }} {{ b.city }}
+    </p>
+
+    @if (b.description) {
+      <p class="description">{{ b.description }}</p>
+    }
+
+    <div class="field">
+      @if (b.website) {
+        <a [href]="b.website" target="_blank" rel="noopener noreferrer">{{ b.website }}</a>
+      } @else {
+        <p class="unavailable">Site web non disponible</p>
+      }
+    </div>
+
+    <div class="field">
+      @if (b.socialLinks && (b.socialLinks | keyvalue).length > 0) {
+        <ul class="social-links">
+          @for (link of b.socialLinks | keyvalue; track link.key) {
+            <li><a [href]="link.value" target="_blank" rel="noopener noreferrer">{{ link.key }}</a></li>
+          }
+        </ul>
+      } @else {
+        <p class="unavailable">Réseaux sociaux non disponibles</p>
+      }
+    </div>
+  </aside>
+}

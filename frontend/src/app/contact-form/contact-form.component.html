@@ -1,0 +1,142 @@
+@if (contactService.isOpen()) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal parchment-panel" (click)="$event.stopPropagation()">
+      <button type="button" class="close-button" (click)="close()" aria-label="Fermer">&times;</button>
+
+      <div class="tabs">
+        <button
+          type="button"
+          class="tab"
+          [class.active]="contactService.mode() === 'contact'"
+          (click)="switchMode('contact')"
+        >
+          Me contacter
+        </button>
+        <button
+          type="button"
+          class="tab"
+          [class.active]="contactService.mode() === 'suggest'"
+          (click)="switchMode('suggest')"
+        >
+          Proposer une brasserie
+        </button>
+      </div>
+
+      @if (success(); as successMessage) {
+        <p class="feedback feedback--success">{{ successMessage }}</p>
+      } @else {
+        @if (generalError(); as error) {
+          <p class="feedback feedback--error">{{ error }}</p>
+        }
+
+        @if (contactService.mode() === 'contact') {
+          <form (ngSubmit)="submitContact()">
+            <label>
+              Nom (optionnel)
+              <input type="text" name="name" [(ngModel)]="name" />
+            </label>
+            <label>
+              Email (optionnel, pour te répondre)
+              <input type="email" name="email" [(ngModel)]="email" />
+            </label>
+            <label>
+              Message
+              <textarea name="message" rows="4" required [(ngModel)]="message"></textarea>
+              @if (fieldErrors()?.['message']; as err) {
+                <span class="field-error">{{ err }}</span>
+              }
+            </label>
+
+            <input
+              type="text"
+              name="website_url"
+              [(ngModel)]="websiteUrl"
+              class="honeypot"
+              tabindex="-1"
+              aria-hidden="true"
+              autocomplete="off"
+            />
+
+            <button type="submit" [disabled]="submitting()">
+              {{ submitting() ? 'Envoi...' : 'Envoyer' }}
+            </button>
+          </form>
+        } @else {
+          <form (ngSubmit)="submitSuggestion()">
+            <label>
+              Nom de la brasserie
+              <input type="text" name="breweryName" required [(ngModel)]="breweryName" />
+              @if (fieldErrors()?.['name']; as err) {
+                <span class="field-error">{{ err }}</span>
+              }
+            </label>
+            <label>
+              Adresse
+              <input type="text" name="address" [(ngModel)]="address" />
+            </label>
+            <div class="row">
+              <label>
+                Code postal
+                <input type="text" name="postalCode" [(ngModel)]="postalCode" />
+              </label>
+              <label>
+                Ville
+                <input type="text" name="city" [(ngModel)]="city" />
+              </label>
+            </div>
+            <label>
+              Site web
+              <input type="url" name="website" placeholder="https://..." [(ngModel)]="website" />
+              @if (fieldErrors()?.['website']; as err) {
+                <span class="field-error">{{ err }}</span>
+              }
+            </label>
+            <div class="row">
+              <label>
+                Facebook
+                <input type="text" name="facebook" [(ngModel)]="facebook" />
+              </label>
+              <label>
+                Instagram
+                <input type="text" name="instagram" [(ngModel)]="instagram" />
+              </label>
+              <label>
+                Twitter / X
+                <input type="text" name="twitter" [(ngModel)]="twitter" />
+              </label>
+            </div>
+            <label>
+              Description
+              <textarea name="description" rows="3" [(ngModel)]="description"></textarea>
+            </label>
+            <div class="row">
+              <label>
+                Latitude (optionnel)
+                <input type="number" name="latitude" step="any" [(ngModel)]="latitude" />
+              </label>
+              <label>
+                Longitude (optionnel)
+                <input type="number" name="longitude" step="any" [(ngModel)]="longitude" />
+              </label>
+            </div>
+            <p class="hint">Coordonnées trouvables par exemple sur Google Maps (clic droit sur le point).</p>
+
+            <input
+              type="text"
+              name="company"
+              [(ngModel)]="company"
+              class="honeypot"
+              tabindex="-1"
+              aria-hidden="true"
+              autocomplete="off"
+            />
+
+            <button type="submit" [disabled]="submitting()">
+              {{ submitting() ? 'Envoi...' : 'Proposer' }}
+            </button>
+          </form>
+        }
+      }
+    </div>
+  </div>
+}

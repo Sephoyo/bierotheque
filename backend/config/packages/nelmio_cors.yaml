@@ -1,0 +1,31 @@
+nelmio_cors:
+    defaults:
+        origin_regex: true
+        allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
+        allow_methods: ['GET', 'OPTIONS']
+        allow_headers: ['Content-Type']
+        max_age: 3600
+    paths:
+        # Plus spécifique en premier : NelmioCorsBundle retient la première
+        # entrée dont le regex matche, donc /api/analytics/* doit être testé
+        # avant le /api générique (lecture seule) pour autoriser POST.
+        '^/api/analytics':
+            allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
+            allow_headers: ['Content-Type', 'Authorization']
+            allow_methods: ['GET', 'POST', 'OPTIONS']
+            max_age: 3600
+        '^/api/contact':
+            allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
+            allow_headers: ['Content-Type', 'Authorization']
+            allow_methods: ['GET', 'POST', 'OPTIONS']
+            max_age: 3600
+        '^/api/breweries/(suggest|pending)':
+            allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
+            allow_headers: ['Content-Type', 'Authorization']
+            allow_methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+            max_age: 3600
+        '^/api':
+            allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
+            allow_headers: ['Content-Type']
+            allow_methods: ['GET', 'OPTIONS']
+            max_age: 3600

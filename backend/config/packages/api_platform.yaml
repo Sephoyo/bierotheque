@@ -1,0 +1,23 @@
+api_platform:
+    title: 'Bièrothèque API'
+    description: 'API des brasseries artisanales de France'
+    version: '1.0.0'
+    show_webby: false
+    defaults:
+        # Le clustering Leaflet (leaflet.markercluster) est fait pour absorber
+        # beaucoup de marqueurs à l'affichage : la vraie limite de charge vient du
+        # filtre bbox, pas d'une pagination interne. Plafond aligné sur la taille
+        # réelle du jeu de données (~1700 brasseries en France) pour qu'une vue
+        # dézoomée sur toute la France ne soit pas tronquée à 30 résultats.
+        pagination_client_items_per_page: true
+        pagination_items_per_page: 30
+        pagination_maximum_items_per_page: 2000
+    # "json" en premier : réponse JSON brute par défaut (pas de wrapper Hydra),
+    # pour que le frontend Angular type directement Observable<Brewery[]>.
+    formats:
+        json: ['application/json']
+        jsonld: ['application/ld+json']
+    mapping:
+        paths:
+            - '%kernel.project_dir%/src/Entity'
+            - '%kernel.project_dir%/src/ApiResource'

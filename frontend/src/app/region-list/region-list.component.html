@@ -1,0 +1,23 @@
+@if (breweryService.selectedRegion(); as region) {
+  <aside class="region-list parchment-panel">
+    <header>
+      <h2>{{ region }}</h2>
+      <button type="button" class="close-button" (click)="close()" aria-label="Fermer">&times;</button>
+    </header>
+
+    <p class="count">{{ breweryService.breweries().length }} brasserie(s)</p>
+
+    <ul>
+      @for (brewery of breweryService.breweries(); track brewery.id) {
+        <li>
+          <button type="button" (click)="onSelect(brewery)">
+            <span class="name">{{ brewery.name }}</span>
+            @if (brewery.city) {
+              <span class="city">{{ brewery.city }}</span>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+}

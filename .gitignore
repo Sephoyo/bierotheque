@@ -1,0 +1,6 @@
+# Secrets locaux (jamais commités) — voir .env.example pour le template
+.env
+.env.local
+.env.*.local
+
+.DS_Store

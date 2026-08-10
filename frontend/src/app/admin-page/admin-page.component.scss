@@ -1,0 +1,160 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--color-cream);
+  font-family: var(--font-body);
+}
+
+.admin-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+  }
+}
+
+.login-form {
+  max-width: 360px;
+  margin: 80px auto 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h1 {
+    margin: 0 0 8px;
+    font-family: var(--font-heading);
+  }
+
+  @media (max-width: 480px) {
+    margin-top: 32px;
+    padding: 16px;
+  }
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  h1 {
+    font-family: var(--font-heading);
+    margin: 0;
+  }
+}
+
+section.parchment-panel {
+  padding: 20px;
+
+  h2 {
+    margin-top: 0;
+    font-family: var(--font-heading);
+  }
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
+input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-gold);
+  box-sizing: border-box;
+}
+
+button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-amber);
+  color: var(--color-cream);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.pending-list,
+.message-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pending-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(74, 46, 26, 0.12);
+
+  // Nom + ville + lien à côté de 2 boutons : trop serré sur mobile, on empile.
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  .approve {
+    background: #4a7c59;
+  }
+
+  .reject {
+    background: #a02020;
+  }
+}
+
+.message-list li {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(74, 46, 26, 0.12);
+
+  p {
+    margin: 4px 0 0;
+  }
+
+  .date {
+    opacity: 0.6;
+    font-size: 0.8em;
+    margin-left: 8px;
+  }
+}
+
+.empty {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.feedback--error {
+  color: #a02020;
+}

@@ -1,0 +1,93 @@
+<div class="admin-page">
+  @if (!adminService.isAuthenticated()) {
+    <form class="login-form parchment-panel" (ngSubmit)="login()">
+      <h1>Connexion admin</h1>
+
+      @if (loginError(); as error) {
+        <p class="feedback feedback--error">{{ error }}</p>
+      }
+
+      <label>
+        Identifiant
+        <input type="text" name="username" required [(ngModel)]="username" />
+      </label>
+      <label>
+        Mot de passe
+        <input type="password" name="password" required [(ngModel)]="password" />
+      </label>
+
+      <button type="submit" [disabled]="loggingIn()">
+        {{ loggingIn() ? 'Connexion...' : 'Se connecter' }}
+      </button>
+    </form>
+  } @else {
+    <header class="admin-header">
+      <h1>Espace admin</h1>
+      <button type="button" (click)="logout()">Se déconnecter</button>
+    </header>
+
+    <section class="parchment-panel">
+      <h2>Brasseries en attente ({{ pending().length }})</h2>
+      @if (pending().length === 0) {
+        <p class="empty">Rien en attente.</p>
+      } @else {
+        <ul class="pending-list">
+          @for (brewery of pending(); track brewery.id) {
+            <li>
+              <div class="info">
+                <strong>{{ brewery.name }}</strong>
+                @if (brewery.city) {
+                  <span> — {{ brewery.city }}</span>
+                }
+                @if (brewery.website) {
+                  <a [href]="brewery.website" target="_blank" rel="noopener noreferrer">site</a>
+                }
+              </div>
+              <div class="actions">
+                <button type="button" class="approve" (click)="approve(brewery)">Approuver</button>
+                <button type="button" class="reject" (click)="reject(brewery)">Rejeter</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="parchment-panel">
+      <h2>Messages de contact ({{ messages().length }})</h2>
+      @if (messages().length === 0) {
+        <p class="empty">Aucun message.</p>
+      } @else {
+        <ul class="message-list">
+          @for (msg of messages(); track msg.id) {
+            <li>
+              <div class="meta">
+                <strong>{{ msg.name || 'Anonyme' }}</strong>
+                @if (msg.email) {
+                  <span> — {{ msg.email }}</span>
+                }
+                <span class="date">{{ msg.createdAt | date: 'short' }}</span>
+              </div>
+              <p>{{ msg.message }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="parchment-panel">
+      <h2>Statistiques de visite</h2>
+      @if (stats(); as s) {
+        <p>Total : {{ s.total }} vue(s)</p>
+        @if (s.byCountry.length > 0) {
+          <h3>Par pays</h3>
+          <ul>
+            @for (row of s.byCountry; track row.country) {
+              <li>{{ row.country }} — {{ row.count }}</li>
+            }
+          </ul>
+        }
+      }
+    </section>
+  }
+</div>

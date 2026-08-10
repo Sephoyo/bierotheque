@@ -1,0 +1,31 @@
+<footer class="app-footer">
+  <div class="footer-content">
+    <section class="attribution">
+      <p>
+        Données © les contributeurs
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>,
+        disponibles sous licence
+        <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener noreferrer">ODbL</a>.
+      </p>
+      <p>
+        Récupérées via
+        <a href="https://overpass-api.de/" target="_blank" rel="noopener noreferrer">Overpass API</a>.
+      </p>
+    </section>
+
+    <section class="disclaimer">
+      <p>
+        Bièrothèque est un projet personnel, non commercial. Ce site n'utilise aucun cookie. Des statistiques de
+        visite anonymes et agrégées (pays/ville de connexion, page consultée, date) sont enregistrées à des fins de
+        mesure d'audience ; l'adresse IP n'est jamais stockée. Les informations sur les brasseries proviennent de
+        sources publiques et peuvent être incomplètes ou obsolètes.
+      </p>
+    </section>
+
+    <button type="button" class="contact-link" (click)="openContactForm()">
+      Nous contacter / proposer une brasserie
+    </button>
+
+    <p class="copyright">&copy; {{ currentYear }} Bièrothèque</p>
+  </div>
+</footer>

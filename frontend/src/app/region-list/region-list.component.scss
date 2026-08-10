@@ -1,0 +1,85 @@
+:host {
+  // Pas de box propre au host : quand le @if interne ne rend rien (aucune
+  // région sélectionnée), l'élément ne doit occuper aucun espace dans le
+  // flex-row parent (sinon une colonne vide de 300px reste visible).
+  display: contents;
+}
+
+.region-list {
+  width: 300px;
+  flex-shrink: 0;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  // Sur petit écran, une colonne fixe de 300px écraserait la carte sur
+  // quasiment tout l'espace disponible : on bascule en overlay plein écran
+  // plutôt qu'en colonne latérale (position:fixed la sort du flex du parent).
+  @media (max-width: 768px) {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    z-index: 1500;
+  }
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--color-hop-brown);
+  cursor: pointer;
+}
+
+.count {
+  margin: 4px 0 12px;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+li button {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 8px 4px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(74, 46, 26, 0.12);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  color: inherit;
+
+  &:hover {
+    background: rgba(74, 46, 26, 0.06);
+  }
+
+  .city {
+    font-size: 0.8em;
+    opacity: 0.7;
+  }
+}

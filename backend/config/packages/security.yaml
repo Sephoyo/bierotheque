@@ -1,0 +1,47 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # Un seul compte admin en mémoire (pas besoin d'une table utilisateur pour
+    # un unique compte perso) — identifiants lus depuis l'env, hash généré via
+    # `php bin/console security:hash-password`.
+    providers:
+        admin_provider:
+            memory:
+                users:
+                    '%env(ADMIN_USERNAME)%':
+                        password: '%env(ADMIN_PASSWORD_HASH)%'
+                        roles: ['ROLE_ADMIN']
+
+    firewalls:
+        dev:
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+        # Doit être déclaré AVANT "api" : seule la première règle qui matche
+        # s'applique (même principe que l'ordre des paths dans nelmio_cors.yaml).
+        admin:
+            pattern: ^/api/(breweries/pending|contact/messages|analytics/stats)
+            stateless: true
+            http_basic:
+                realm: 'Bièrothèque Admin'
+            provider: admin_provider
+        api:
+            pattern: ^/api
+            stateless: true
+            security: false
+        main:
+            stateless: true
+            security: false
+
+    # Note: Only the *first* matching rule is applied
+    access_control:
+        - { path: ^/api/(breweries/pending|contact/messages|analytics/stats), roles: ROLE_ADMIN }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

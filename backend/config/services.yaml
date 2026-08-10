@@ -1,0 +1,25 @@
+parameters:
+    overpass.endpoint: '%env(OVERPASS_ENDPOINT)%'
+    overpass.bbox: '%env(OVERPASS_BBOX)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Service\OverpassClient:
+        arguments:
+            $endpoint: '%overpass.endpoint%'
+            $bbox: '%overpass.bbox%'
+
+    # Fallback explicite si l'autoconfiguration de l'interface
+    # QueryCollectionExtensionInterface n'est pas détectée automatiquement :
+    # App\Doctrine\BreweryBboxExtension:
+    #     tags: ['api_platform.doctrine.orm.query_extension.collection']

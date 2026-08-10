@@ -1,0 +1,92 @@
+# CLAUDE.md — Projet Bièrothèque
+
+## Vue d'ensemble du projet
+Application web de carte interactive répertoriant les brasseries artisanales de France (projet perso "Bièrothèque"). Stack : Symfony (API) + Angular (SPA) + Leaflet (carte) + PostgreSQL.
+
+## Structure du repo
+```
+bierotheque/
+├── backend/                 # Symfony 7 + API Platform
+│   ├── src/
+│   │   ├── Entity/Brewery.php
+│   │   ├── Repository/BreweryRepository.php
+│   │   ├── Command/ImportBreweriesCommand.php   # import via Overpass API
+│   │   ├── Service/OverpassClient.php
+│   │   └── ApiResource/ (si DTO API Platform)
+│   ├── migrations/
+│   └── config/
+├── frontend/                 # Angular
+│   ├── src/app/
+│   │   ├── map/map.component.ts        # Leaflet + clustering
+│   │   ├── brewery-detail/brewery-detail.component.ts  # panneau/drawer
+│   │   ├── services/brewery.service.ts
+│   │   └── models/brewery.model.ts
+│   └── src/styles/_bierotheque-theme.scss
+└── docker-compose.yml         # postgres + php + node
+```
+
+## Conventions de code
+- **PHP** : PSR-12, typage strict (`declare(strict_types=1)`), Symfony best practices, API Platform pour l'exposition REST (annotations/attributs `#[ApiResource]`).
+- **Angular** : composants standalone, signals pour l'état local, RxJS pour les flux HTTP, SCSS modulaire par composant.
+- **Nommage** : entités et services en anglais, commentaires et messages utilisateurs en français.
+- **Git** : commits atomiques, préfixes `feat:`, `fix:`, `chore:`, `docs:`.
+
+## Modèle de données — entité Brewery
+Champs clés : `id`, `name`, `latitude`, `longitude`, `address`, `postalCode`, `city`, `region`, `website` (nullable), `socialLinks` (json, nullable), `description` (text, nullable), `osmId` (unique, pour éviter les doublons à l'import), `source` (enum: `osm`, `manual`, `data_gouv`), `createdAt`, `updatedAt`.
+
+## Source des données
+1. **OpenStreetMap / Overpass API** (source principale, gratuite, licence ODbL) : requête Overpass sur les tags `craft=brewery`, `building=brewery`, `microbrewery=yes`, filtrée par la zone administrative réelle de la France (`area["ISO3166-1"="FR"]["admin_level"="2"]`), combinée à `[bbox:...]` (France métropolitaine + Corse, `OVERPASS_BBOX`) pour exclure les DOM-TOM. Pas de clé API nécessaire. Endpoint public : `https://overpass-api.de/api/interpreter`.
+2. **data.gouv.fr / Annuaire des Entreprises** (code APE 11.05Z — Fabrication de bière) : source complémentaire pour enrichir avec SIRET et adresses officielles, utile pour valider/compléter les données OSM.
+3. Les données manuelles (site web, réseaux sociaux, description, logo) peuvent être ajoutées via un back-office simple ou directement en base.
+
+## Commandes utiles
+```bash
+# Backend
+cd backend
+composer install
+php bin/console doctrine:migrations:migrate
+php bin/console app:import-breweries          # lance l'import Overpass
+symfony server:start                          # ou docker compose up
+
+# Frontend
+cd frontend
+npm install
+ng serve
+
+# Docker (stack complète)
+docker compose up -d
+```
+
+## Statut du scaffolding (2026-07-28)
+- Backend : PHP 8.5 / Composer ont été installés (Homebrew) pour vérifier réellement le squelette écrit à la main. `composer install`/`composer validate` passent. Deux bugs réels ont été trouvés et corrigés à cette occasion : `framework.serializer.enable_annotations` n'existe plus (option retirée, remplacée par `enabled: true`), et `config/routes.yaml` faisait doublon avec `config/routes/api_platform.yaml` généré par la recette Symfony Flex d'API Platform (celle-ci ajoute le préfixe `/api` — `config/routes.yaml` a été supprimé). Versions finalement retenues après vérification des avis de sécurité Packagist : Symfony **7.4.x** (7.1.x a des CVE non patchées) et **api-platform/core ^4.3** (toute la branche 3.4.x est bloquée par advisories ; les namespaces `ApiPlatform\Metadata\*`/`ApiPlatform\Doctrine\Orm\Extension\*` restent identiques en 4.x). Vérifié en conditions réelles : `php bin/console list`, `lint:container`, `debug:container`, `debug:serializer`, `api:openapi:export` (routes `/api/breweries` et `/api/breweries/{id}` confirmées, filtres `region`/`city`/`name` exposés). PostgreSQL 16 installé via Homebrew (`brew install postgresql@16`, rôle `app`/base `bierotheque` créés pour matcher `DATABASE_URL`) : `doctrine:migrations:migrate` exécuté avec succès dans les deux sens (up/down/up). La migration initiale écrite à la main ne matchait pas exactement les métadonnées de l'entité (`doctrine:schema:validate` échouait : index `region`/`latitude,longitude` absents des attributs `#[ORM\Index]`, nom de contrainte unique différent, commentaire `DC2Type` manquant sur les colonnes `datetime_immutable`) — corrigé en ajoutant les attributs `#[ORM\Index]` sur `Brewery` et en régénérant la migration via `doctrine:migrations:diff` ; `doctrine:schema:validate` est désormais OK (mapping + DB en phase). Un test de persistance manuel (insert/fetch/delete via l'`EntityManager`, colonnes enum `source` et JSON `socialLinks`, lookup par `osmId`) a été exécuté avec succès contre la base réelle.
+- Import réel exécuté deux fois contre l'API Overpass en production : un premier run avec un simple rectangle bbox a remonté 3229 éléments, dont des faux positifs hors de France (ex. Cornouailles au Royaume-Uni, brasseries suisses) puisqu'un rectangle ne suit pas les frontières réelles ; il a aussi révélé que `postal_code VARCHAR(10)` était trop court pour certains codes postaux OSM (migration corrective générée par `doctrine:migrations:diff`, colonne passée à `VARCHAR(32)`). La requête Overpass a été corrigée pour filtrer par la zone administrative réelle (`area["ISO3166-1"="FR"]["admin_level"="2"]`), combinée au `[bbox:...]` existant pour rester sur la France métropolitaine + Corse (exclut les DOM-TOM, rattachés à la même entité OSM). Comparaison vérifiée en direct sur l'API Overpass : 2076 résultats `craft=brewery` avec le rectangle seul contre 1100 avec le filtre par zone — près de la moitié de faux positifs éliminés. Le run final donne 1731 brasseries en base, sans plus aucune entrée hors de France. Cette requête par zone étant plus coûteuse côté serveur Overpass, le timeout du client HTTP a dû être relevé (`timeout: 200`, `max_duration: 220`) pour laisser le budget `[timeout:180]` de la requête s'exécuter sans que le client ne coupe la connexion en premier.
+- Champ `region` : désormais renseigné à l'import. Vérification faite sur un échantillon de brasseries que OSM ne tague jamais `addr:region`/`is_in:region`/`addr:state` en France (seulement `addr:city`/`addr:postcode`/`addr:street`/`addr:housenumber`) — la région est donc déduite du code postal via `App\Service\FrenchRegionResolver` (2 premiers chiffres = département, table de correspondance vers les 13 régions métropolitaines + Corse + DOM). Sur les 1731 brasseries importées, 634 ont un code postal exploitable et se voient toutes attribuer une région (0 échec de résolution) ; les ~1097 restantes (pas de `addr:postcode` dans OSM) ont `region = NULL`, à enrichir manuellement ou via data.gouv.fr.
+- Frontend : généré avec `@angular/cli@22` (`--file-name-style-guide=2016` pour conserver le nommage `*.component.ts` documenté ci-dessus), avec `leaflet@1.9.4` + `leaflet.markercluster@1.5.3` en intégration directe (pas de wrapper `ngx-leaflet`, non maintenu). `npm install`, `npx ng build` et `npx ng test --watch=false` exécutés avec succès.
+- `docker-compose.yml`/`backend/Dockerfile` (racine) ont été écrits mais **non testés** (pas de Docker disponible). Notez aussi que la recette Symfony Flex de `doctrine/doctrine-bundle` a généré `backend/compose.yaml`/`compose.override.yaml` (service Postgres seul, pratique pour lancer juste la base en local) — distinct du `docker-compose.yml` racine qui containerise toute la stack.
+
+## Style visuel "bièrothèque"
+- Palette : ambré (#C68A2E), marron houblon (#4A2E1A), crème/parchemin (#F5E9D3), accent doré (#D9A441).
+- Typographie : police serif/artisanale pour les titres (ex: "Fraunces" ou "Playfair Display"), sans-serif lisible pour le texte.
+- Marqueurs Leaflet custom en forme de chope/houblon, clustering via `leaflet.markercluster`.
+- Fiche détail façon étiquette de bière ou vieux parchemin (bordures, ombres douces, coins arrondis).
+
+## API endpoints
+- `GET /api/breweries?bbox=lat1,lng1,lat2,lng2` — liste filtrée par zone visible sur la carte.
+- `GET /api/breweries/{id}` — détail d'une brasserie (id numérique uniquement, `requirements: ['id' => '\d+']`).
+- `GET /api/breweries?region=Hauts-de-France` — filtre par région.
+- `GET /api/breweries?name=`/`?city=` — recherche partielle (utilisée par la barre de recherche).
+- `POST /api/breweries/suggest` — suggestion publique d'une brasserie (honeypot `company`, crée en `published=false`).
+- `POST /api/contact` — message de contact public (honeypot `website_url`).
+- `POST /api/analytics/pageview` — mesure d'audience anonyme (aucune IP stockée, cf. `GeoLocationResolver`).
+- **Protégés par Basic Auth (`ROLE_ADMIN`)** : `GET /api/breweries/pending`, `POST /api/breweries/pending/{id}/approve`, `DELETE /api/breweries/pending/{id}`, `GET /api/contact/messages`, `GET /api/analytics/stats`.
+
+## Espace admin
+- Accessible sur le frontend via `/admin` (pas de lien visible depuis le site public — on y accède en tapant l'URL). Formulaire de connexion puis 3 sections : suggestions en attente (approuver/rejeter), messages de contact, stats de visite.
+- Auth : un seul compte en mémoire (`config/packages/security.yaml`), identifiants dans `backend/.env` (`ADMIN_USERNAME`/`ADMIN_PASSWORD_HASH`, ce dernier généré via `php bin/console security:hash-password`). HTTP Basic — ne chiffre rien par lui-même, la protection réelle vient du HTTPS une fois déployé.
+- Le token (base64 `user:pass`) est stocké côté frontend en `sessionStorage` (effacé à la fermeture de l'onglet), pas en cookie.
+
+## Points d'attention
+- Dédupliquer les brasseries lors de l'import (clé `osmId`).
+- Gérer le cas où `website`/`socialLinks` sont absents dans les données OSM (afficher un message "Site web non disponible").
+- Prévoir la pagination ou le filtrage par bbox pour ne pas charger toutes les brasseries de France en une seule requête (perf carte).
+- Respecter la limite de taux d'Overpass API (éviter les imports trop fréquents, mettre en cache/cron mensuel).

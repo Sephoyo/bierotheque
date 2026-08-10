@@ -1,0 +1,18 @@
+<div class="app-shell">
+  <app-nav-bar
+    (regionSelected)="onRegionSelected($event, map)"
+    (brewerySelected)="onBrewerySelected($event, map)"
+  />
+
+  <div class="content">
+    <app-region-list (brewerySelected)="onBrewerySelected($event, map)" />
+
+    <div class="map-area">
+      <app-map #map />
+      <app-brewery-detail />
+    </div>
+  </div>
+
+  <app-footer />
+  <app-contact-form />
+</div>

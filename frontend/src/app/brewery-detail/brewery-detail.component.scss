@@ -1,0 +1,55 @@
+.drawer {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: 320px;
+  max-width: calc(100% - 32px);
+  z-index: 1000;
+  padding: 24px;
+  overflow-y: auto;
+
+  // En dessous de 480px, la carte flottante de 320px laisse peu de place :
+  // on passe en quasi plein écran plutôt qu'une carte étroite dans un coin.
+  @media (max-width: 480px) {
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: auto;
+    max-width: none;
+    padding: 16px;
+  }
+}
+
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-hop-brown);
+  cursor: pointer;
+}
+
+.address {
+  color: var(--color-hop-brown);
+  opacity: 0.85;
+}
+
+.unavailable {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.social-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    margin-bottom: 4px;
+  }
+}

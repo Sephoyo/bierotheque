@@ -1,0 +1,39 @@
+<nav class="nav-bar">
+  <span class="brand">Bièrothèque</span>
+
+  <div class="search">
+    <input
+      type="search"
+      placeholder="Chercher une brasserie ou une ville..."
+      [value]="searchQuery()"
+      (input)="onSearchInput($any($event.target).value)"
+    />
+
+    @if (searchResults().length > 0) {
+      <ul class="search-results">
+        @for (brewery of searchResults(); track brewery.id) {
+          <li>
+            <button type="button" (click)="onSelectBrewery(brewery)">
+              <span class="name">{{ brewery.name }}</span>
+              @if (brewery.city) {
+                <span class="city">{{ brewery.city }}</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    } @else if (searching()) {
+      <div class="search-results search-results--loading">Recherche...</div>
+    }
+  </div>
+
+  <select
+    class="region-select"
+    (change)="onSelectRegion($any($event.target).value)"
+  >
+    <option value="" selected disabled>Choisir une région...</option>
+    @for (region of regions; track region.name) {
+      <option [value]="region.name">{{ region.name }}</option>
+    }
+  </select>
+</nav>

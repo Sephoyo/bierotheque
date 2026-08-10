@@ -1,0 +1,17 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    handle_all_throwables: true
+    http_method_override: false
+
+    # API JSON stateless : pas besoin de session
+    session: false
+
+    serializer:
+        enabled: true
+
+    property_info:
+        enabled: true
+
+when@test:
+    framework:
+        test: true
