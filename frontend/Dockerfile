@@ -11,6 +11,13 @@ RUN npx ng build --configuration production
 # --- Étape 2 : image de service (nginx) ---
 FROM nginx:1.27-alpine
 
+# bash : absent de l'image nginx-alpine par défaut (seul /bin/sh est
+# présent). Nécessaire pour le terminal web de Dokploy (docker exec ...
+# bash) — sans ça, ouvrir un terminal sur ce conteneur échoue avec
+# "exec: bash: no such file or directory". docker-entrypoint.sh reste en
+# #!/bin/sh et n'en dépend pas.
+RUN apk add --no-cache bash
+
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
