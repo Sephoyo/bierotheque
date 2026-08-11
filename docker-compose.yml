@@ -44,8 +44,12 @@ services:
       OVERPASS_ENDPOINT: "${OVERPASS_ENDPOINT:-https://overpass-api.de/api/interpreter}"
       OVERPASS_BBOX: "${OVERPASS_BBOX:-41.2,-5.3,51.15,9.7}"
       ADMIN_USERNAME: "${ADMIN_USERNAME:?ADMIN_USERNAME doit être défini}"
-      ADMIN_PASSWORD_HASH: "${ADMIN_PASSWORD_HASH:?ADMIN_PASSWORD_HASH doit être défini (php bin/console security:hash-password)}"
-      DEFAULT_URI: "${DEFAULT_URI:-https://api.bierotheque.fr}"
+      # Encodé en base64 côté env (cf. security.yaml, processeur "base64:") —
+      # un hash bcrypt en clair contient des signes dollar que l'interpolation
+      # de variables de Dokploy/Docker Compose corrompt silencieusement. Voir
+      # .env.example pour la commande de génération complète.
+      ADMIN_PASSWORD_HASH: "${ADMIN_PASSWORD_HASH:?ADMIN_PASSWORD_HASH doit être défini, encodé en base64 - voir .env.example}"
+      DEFAULT_URI: "${DEFAULT_URI:-https://apibierotheque.josephbaert.fr}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,7 +90,7 @@ services:
     build:
       context: ./frontend
     environment:
-      API_BASE_URL: "${API_BASE_URL:?API_BASE_URL doit être défini, ex: https://api.bierotheque.fr/api}"
+      API_BASE_URL: "${API_BASE_URL:?API_BASE_URL doit être défini, ex: https://apibierotheque.josephbaert.fr/api}"
     depends_on:
       - php
     restart: unless-stopped
