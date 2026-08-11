@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin
+Allow: /
+
+Sitemap: https://bierotheque.josephbaert.fr/sitemap.xml
