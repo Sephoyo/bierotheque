@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Un seul URL indexable : l'app est une SPA sans routes par brasserie (le
+  détail s'ouvre dans un panneau sur la carte, pas une URL dédiée) — cf.
+  app.routes.ts. /admin est volontairement absent (voir robots.txt).
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://bierotheque.josephbaert.fr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
