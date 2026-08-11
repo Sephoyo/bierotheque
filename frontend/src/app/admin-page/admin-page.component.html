@@ -54,6 +54,71 @@
     </section>
 
     <section class="parchment-panel">
+      <h2>Demandes de modification ({{ editSuggestions().length }})</h2>
+      @if (editSuggestions().length === 0) {
+        <p class="empty">Rien en attente.</p>
+      } @else {
+        <ul class="edit-suggestion-list">
+          @for (suggestion of editSuggestions(); track suggestion.id) {
+            <li>
+              <div class="info">
+                <strong>{{ suggestion.breweryName }}</strong>
+                <span class="date">{{ suggestion.createdAt | date: 'short' }}</span>
+              </div>
+
+              <div class="diff">
+                @if (suggestion.proposed.website) {
+                  <div class="diff-row">
+                    <span class="diff-label">Site web</span>
+                    <span class="diff-old">{{ suggestion.current.website || '—' }}</span>
+                    <span class="diff-arrow">→</span>
+                    <span class="diff-new">{{ suggestion.proposed.website }}</span>
+                  </div>
+                }
+                @if (suggestion.proposed.socialLinks) {
+                  <div class="diff-row">
+                    <span class="diff-label">Réseaux</span>
+                    <span class="diff-old">
+                      @if (suggestion.current.socialLinks && (suggestion.current.socialLinks | keyvalue).length > 0) {
+                        @for (link of suggestion.current.socialLinks | keyvalue; track link.key) {
+                          {{ link.key }}: {{ link.value }}
+                        }
+                      } @else {
+                        —
+                      }
+                    </span>
+                    <span class="diff-arrow">→</span>
+                    <span class="diff-new">
+                      @for (link of suggestion.proposed.socialLinks | keyvalue; track link.key) {
+                        {{ link.key }}: {{ link.value }}
+                      }
+                    </span>
+                  </div>
+                }
+                @if (suggestion.proposed.description) {
+                  <div class="diff-row">
+                    <span class="diff-label">Description</span>
+                    <span class="diff-old">{{ suggestion.current.description || '—' }}</span>
+                    <span class="diff-arrow">→</span>
+                    <span class="diff-new">{{ suggestion.proposed.description }}</span>
+                  </div>
+                }
+                @if (suggestion.message) {
+                  <p class="diff-message">« {{ suggestion.message }} »</p>
+                }
+              </div>
+
+              <div class="actions">
+                <button type="button" class="approve" (click)="approveEditSuggestion(suggestion)">Approuver</button>
+                <button type="button" class="reject" (click)="rejectEditSuggestion(suggestion)">Rejeter</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="parchment-panel">
       <h2>Messages de contact ({{ messages().length }})</h2>
       @if (messages().length === 0) {
         <p class="empty">Aucun message.</p>

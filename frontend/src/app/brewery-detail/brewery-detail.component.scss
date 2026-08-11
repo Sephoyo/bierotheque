@@ -53,3 +53,103 @@
     margin-bottom: 4px;
   }
 }
+
+.edit-suggestion {
+  margin-top: 20px;
+  border-top: 1px solid var(--color-gold);
+  padding-top: 16px;
+}
+
+.edit-toggle {
+  background: none;
+  border: 1px solid var(--color-gold);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--color-hop-brown);
+  font-family: var(--font-body);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.edit-suggestion form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.edit-suggestion label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.edit-suggestion .row {
+  display: flex;
+  gap: 10px;
+
+  label {
+    min-width: 0;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
+}
+
+.edit-suggestion input,
+.edit-suggestion textarea {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-gold);
+  font-family: var(--font-body);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.edit-suggestion .honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.edit-suggestion button[type='submit'] {
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-amber);
+  color: var(--color-cream);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.edit-suggestion .feedback {
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+
+  &--success {
+    background: rgba(74, 46, 26, 0.08);
+    color: var(--color-hop-brown);
+  }
+
+  &--error {
+    background: rgba(180, 40, 40, 0.1);
+    color: #a02020;
+  }
+}
+
+.edit-suggestion .field-error {
+  color: #a02020;
+  font-size: 0.8em;
+}

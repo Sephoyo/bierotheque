@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, forkJoin, map, of, tap } from 'rxjs';
 import { BboxParams, Brewery } from '../models/brewery.model';
+import { BreweryEditSuggestionPayload } from '../models/edit-suggestion.model';
 import { API_BASE_URL } from '../core/runtime-config';
 
 // Le clustering Leaflet absorbe l'affichage de nombreux marqueurs : on demande
@@ -54,6 +55,15 @@ export class BreweryService {
 
   getById(id: number): Observable<Brewery> {
     return this.http.get<Brewery>(`${API_BASE_URL}/breweries/${id}`);
+  }
+
+  /**
+   * Propose une modification (site web/réseaux sociaux/description) sur une
+   * brasserie déjà publiée. Reste en attente de validation admin, cf.
+   * BreweryEditSuggestionController côté backend — n'écrit jamais en direct.
+   */
+  suggestEdit(id: number, payload: BreweryEditSuggestionPayload): Observable<void> {
+    return this.http.post<void>(`${API_BASE_URL}/breweries/${id}/suggest-edit`, payload);
   }
 
   /**
