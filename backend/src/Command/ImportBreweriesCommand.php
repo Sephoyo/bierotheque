@@ -66,9 +66,19 @@ final class ImportBreweriesCommand extends Command
                 ->setAddress($element['address'])
                 ->setPostalCode($element['postalCode'])
                 ->setCity($element['city'])
-                ->setRegion($element['region'])
-                ->setWebsite($element['website'])
-                ->setSocialLinks($element['socialLinks']);
+                ->setRegion($element['region']);
+
+            // website/socialLinks : jamais écrasés si un admin a approuvé une
+            // BreweryEditSuggestion dessus (cf. Brewery::$manuallyEditedFields)
+            // — sinon un ré-import mensuel effacerait silencieusement une
+            // modification humaine avec les données (souvent vides) d'OSM.
+            $lockedFields = $brewery->getManuallyEditedFields();
+            if (!in_array('website', $lockedFields, true)) {
+                $brewery->setWebsite($element['website']);
+            }
+            if (!in_array('socialLinks', $lockedFields, true)) {
+                $brewery->setSocialLinks($element['socialLinks']);
+            }
 
             $this->entityManager->persist($brewery);
 

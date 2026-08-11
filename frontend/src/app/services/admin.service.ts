@@ -3,6 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { AnalyticsStats, ContactMessageRecord } from '../models/admin.model';
 import { Brewery } from '../models/brewery.model';
+import { BreweryEditSuggestionRecord } from '../models/edit-suggestion.model';
 import { API_BASE_URL } from '../core/runtime-config';
 
 const STORAGE_KEY = 'bierotheque_admin_token';
@@ -60,6 +61,24 @@ export class AdminService {
 
   reject(id: number): Observable<void> {
     return this.authorized(() => this.http.delete<void>(`${API_BASE_URL}/breweries/pending/${id}`, { headers: this.authHeaders() }));
+  }
+
+  getEditSuggestions(): Observable<BreweryEditSuggestionRecord[]> {
+    return this.authorized(() =>
+      this.http.get<BreweryEditSuggestionRecord[]>(`${API_BASE_URL}/breweries/edit-suggestions`, { headers: this.authHeaders() }),
+    );
+  }
+
+  approveEditSuggestion(id: number): Observable<void> {
+    return this.authorized(() =>
+      this.http.post<void>(`${API_BASE_URL}/breweries/edit-suggestions/${id}/approve`, null, { headers: this.authHeaders() }),
+    );
+  }
+
+  rejectEditSuggestion(id: number): Observable<void> {
+    return this.authorized(() =>
+      this.http.delete<void>(`${API_BASE_URL}/breweries/edit-suggestions/${id}`, { headers: this.authHeaders() }),
+    );
   }
 
   getMessages(): Observable<ContactMessageRecord[]> {

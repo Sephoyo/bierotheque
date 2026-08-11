@@ -96,6 +96,17 @@ class Brewery
     #[Groups(['brewery:read'])]
     private ?string $osmId = null;
 
+    /**
+     * Noms des champs ("website", "socialLinks") verrouillés suite à
+     * l'approbation d'une BreweryEditSuggestion : App\Command\ImportBreweriesCommand
+     * doit les ignorer lors du prochain import Overpass pour ne pas écraser
+     * une modification humaine avec les données (souvent vides) d'OSM.
+     *
+     * @var list<string>|null
+     */
+    #[ORM\Column(name: 'manually_edited_fields', type: Types::JSON, nullable: true)]
+    private ?array $manuallyEditedFields = null;
+
     #[ORM\Column(length: 20, enumType: BrewerySource::class)]
     #[Groups(['brewery:read'])]
     private BrewerySource $source = BrewerySource::Osm;
@@ -276,6 +287,26 @@ class Brewery
     public function setOsmId(?string $osmId): static
     {
         $this->osmId = $osmId;
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getManuallyEditedFields(): array
+    {
+        return $this->manuallyEditedFields ?? [];
+    }
+
+    /**
+     * Ajoute des noms de champs à la liste verrouillée, sans dupliquer.
+     *
+     * @param list<string> $fields
+     */
+    public function lockFields(array $fields): static
+    {
+        $this->manuallyEditedFields = array_values(array_unique([...$this->getManuallyEditedFields(), ...$fields]));
 
         return $this;
     }

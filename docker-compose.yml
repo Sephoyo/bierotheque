@@ -58,6 +58,29 @@ services:
       ofelia.enabled: "true"
       ofelia.job-exec.import-breweries.schedule: "@monthly"
       ofelia.job-exec.import-breweries.command: "php bin/console app:import-breweries"
+      # Labels Traefik codés en dur plutôt que laissés à l'injection dynamique
+      # de Dokploy (onglet "Domains" du service) : ce service a perdu ses
+      # labels traefik.* sur au moins deux déploiements distincts (404
+      # persistant malgré domaine/DNS/port corrects, cf. CLAUDE.md 2026-08-10
+      # et 2026-08-11) — bug/glitch Dokploy ponctuel non identifié qui
+      # n'affecte pas "frontend". En les committant ici, ils survivent à
+      # chaque déploiement (le fichier est re-tiré de git à chaque fois), que
+      # l'injection Dokploy fonctionne ce jour-là ou non. Le domaine reste
+      # configurable via la variable d'env API_DOMAIN (voir .env.example) —
+      # la conserver aussi dans l'onglet "Domains" de Dokploy ne pose pas de
+      # problème (labels redondants au pire, pas de conflit).
+      traefik.enable: "true"
+      traefik.docker.network: "dokploy-network"
+      traefik.http.routers.bierotheque-api-web.rule: "Host(`${API_DOMAIN:?API_DOMAIN doit être défini, ex: apibierotheque.josephbaert.fr}`)"
+      traefik.http.routers.bierotheque-api-web.entrypoints: "web"
+      traefik.http.routers.bierotheque-api-web.middlewares: "redirect-to-https@file"
+      traefik.http.routers.bierotheque-api-web.service: "bierotheque-api-web"
+      traefik.http.services.bierotheque-api-web.loadbalancer.server.port: "8000"
+      traefik.http.routers.bierotheque-api-websecure.rule: "Host(`${API_DOMAIN:?API_DOMAIN doit être défini, ex: apibierotheque.josephbaert.fr}`)"
+      traefik.http.routers.bierotheque-api-websecure.entrypoints: "websecure"
+      traefik.http.routers.bierotheque-api-websecure.service: "bierotheque-api-websecure"
+      traefik.http.routers.bierotheque-api-websecure.tls.certresolver: "letsencrypt"
+      traefik.http.services.bierotheque-api-websecure.loadbalancer.server.port: "8000"
 
   frontend:
     build:

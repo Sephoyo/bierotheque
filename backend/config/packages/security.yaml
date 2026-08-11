@@ -20,7 +20,7 @@ security:
         # Doit être déclaré AVANT "api" : seule la première règle qui matche
         # s'applique (même principe que l'ordre des paths dans nelmio_cors.yaml).
         admin:
-            pattern: ^/api/(breweries/pending|contact/messages|analytics/stats)
+            pattern: ^/api/(breweries/pending|breweries/edit-suggestions|contact/messages|analytics/stats)
             stateless: true
             http_basic:
                 realm: 'Bièrothèque Admin'
@@ -35,7 +35,7 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        - { path: ^/api/(breweries/pending|contact/messages|analytics/stats), roles: ROLE_ADMIN }
+        - { path: ^/api/(breweries/pending|breweries/edit-suggestions|contact/messages|analytics/stats), roles: ROLE_ADMIN }
 
 when@test:
     security:

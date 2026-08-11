@@ -34,5 +34,70 @@
         <p class="unavailable">Réseaux sociaux non disponibles</p>
       }
     </div>
+
+    <div class="edit-suggestion">
+      <button type="button" class="edit-toggle" (click)="toggleEditForm()">
+        {{ editFormOpen() ? 'Annuler' : '✎ Proposer une modification' }}
+      </button>
+
+      @if (editFormOpen()) {
+        @if (success(); as successMessage) {
+          <p class="feedback feedback--success">{{ successMessage }}</p>
+        } @else {
+          @if (generalError(); as error) {
+            <p class="feedback feedback--error">{{ error }}</p>
+          }
+
+          <form (ngSubmit)="submitEdit()">
+            <label>
+              Site web
+              <input type="url" name="website" placeholder="https://..." [(ngModel)]="website" />
+              @if (fieldErrors()?.['proposedWebsite']; as err) {
+                <span class="field-error">{{ err }}</span>
+              }
+            </label>
+            <div class="row">
+              <label>
+                Facebook
+                <input type="text" name="facebook" [(ngModel)]="facebook" />
+              </label>
+              <label>
+                Instagram
+                <input type="text" name="instagram" [(ngModel)]="instagram" />
+              </label>
+              <label>
+                Twitter / X
+                <input type="text" name="twitter" [(ngModel)]="twitter" />
+              </label>
+            </div>
+            <label>
+              Description
+              <textarea name="description" rows="3" [(ngModel)]="description"></textarea>
+            </label>
+            <label>
+              Autre chose ? (adresse, fermeture, etc.)
+              <textarea name="message" rows="2" [(ngModel)]="message"></textarea>
+            </label>
+            @if (fieldErrors()?.['_']; as err) {
+              <span class="field-error">{{ err }}</span>
+            }
+
+            <input
+              type="text"
+              name="company"
+              [(ngModel)]="company"
+              class="honeypot"
+              tabindex="-1"
+              aria-hidden="true"
+              autocomplete="off"
+            />
+
+            <button type="submit" [disabled]="submitting()">
+              {{ submitting() ? 'Envoi...' : 'Proposer' }}
+            </button>
+          </form>
+        }
+      }
+    </div>
   </aside>
 }

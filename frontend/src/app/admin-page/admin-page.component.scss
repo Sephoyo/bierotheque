@@ -135,6 +135,68 @@ button {
   }
 }
 
+.edit-suggestion-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-suggestion-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(74, 46, 26, 0.12);
+
+  .info {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+}
+
+.diff {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.diff-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.diff-label {
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.diff-old {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.diff-arrow {
+  opacity: 0.6;
+}
+
+.diff-new {
+  color: #4a7c59;
+  font-weight: 600;
+}
+
+.diff-message {
+  margin: 4px 0 0;
+  font-style: italic;
+  opacity: 0.85;
+}
+
 .message-list li {
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(74, 46, 26, 0.12);
