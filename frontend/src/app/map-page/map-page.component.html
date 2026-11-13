@@ -8,11 +8,11 @@
     <app-region-list (brewerySelected)="onBrewerySelected($event, map)" />
 
     <div class="map-area">
-      <app-map #map />
+      <app-map #map (userInteracted)="footerCollapsed.set(true)" />
       <app-brewery-detail />
     </div>
   </div>
 
-  <app-footer />
+  <app-footer [(collapsed)]="footerCollapsed" />
   <app-contact-form />
 </div>

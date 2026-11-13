@@ -1,28 +1,64 @@
 .app-footer {
   background: var(--color-hop-brown);
   color: var(--color-cream);
-  padding: 12px 24px;
   font-size: 0.8rem;
   flex-shrink: 0;
+}
 
-  @media (max-width: 768px) {
-    padding: 12px 16px;
+// Repli animé des mentions détaillées (astuce grid 1fr → 0fr : anime une
+// hauteur « auto » sans la connaître à l'avance).
+.details {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s ease;
+
+  .collapsed & {
+    grid-template-rows: 0fr;
   }
 }
 
-.footer-content {
+.details-inner {
+  overflow: hidden;
+  min-height: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 8px 24px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 12px 24px 4px;
+  box-sizing: border-box;
+  transition:
+    opacity 0.2s ease,
+    padding 0.3s ease;
+
+  // Sans ça, le padding resterait visible une fois la ligne de grille à 0
+  .collapsed & {
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+    padding: 12px 16px 4px;
+  }
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6px 24px 8px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    gap: 8px 12px;
+    padding: 6px 16px 8px;
   }
 }
 
@@ -46,10 +82,12 @@ a {
 
 .copyright {
   white-space: nowrap;
-  opacity: 0.7;
+  opacity: 0.85;
+  margin-right: auto;
 }
 
-.contact-link {
+.contact-link,
+.toggle {
   background: none;
   border: none;
   padding: 0;
@@ -61,5 +99,45 @@ a {
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+// Petit écran : libellé court pour tenir sur une ligne avec le copyright
+.contact-link .short {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .contact-link .long {
+    display: none;
+  }
+
+  .contact-link .short {
+    display: inline;
+  }
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-cream);
+  opacity: 0.85;
+
+  .chevron {
+    transition: transform 0.3s ease;
+    transform: rotate(180deg);
+
+    .collapsed & {
+      transform: rotate(0deg);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .details,
+  .details-inner,
+  .toggle .chevron {
+    transition: none;
   }
 }
