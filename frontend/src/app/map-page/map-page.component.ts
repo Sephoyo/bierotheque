@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { BreweryDetailComponent } from '../brewery-detail/brewery-detail.component';
 import { ContactFormComponent } from '../contact-form/contact-form.component';
 import { FooterComponent } from '../footer/footer.component';
@@ -27,6 +27,9 @@ import { BreweryService } from '../services/brewery.service';
 export class MapPageComponent {
   private readonly breweryService = inject(BreweryService);
   private readonly analyticsService = inject(AnalyticsService);
+
+  /** Le footer se réduit dès que le visiteur commence à explorer la carte. */
+  protected readonly footerCollapsed = signal(false);
 
   constructor() {
     // Uniquement ici (pas dans le shell racine) : une visite de /admin ne

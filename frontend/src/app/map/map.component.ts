@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, effect, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, effect, inject, output } from '@angular/core';
 // Import par défaut (pas `import * as L`) : esbuild fige une copie des
 // propriétés de leaflet au moment de l'import namespace, *avant* que
 // 'leaflet.markercluster' ait pu lui ajouter markerClusterGroup — d'où
@@ -45,6 +45,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   protected readonly breweryService = inject(BreweryService);
 
+  /** Émis une fois, à la première interaction du visiteur avec la carte (glisser, zoomer, toucher). */
+  readonly userInteracted = output<void>();
+  private interacted = false;
+  private resizeObserver: ResizeObserver | null = null;
+
   private map: L.Map | null = null;
   private markerClusterGroup: L.MarkerClusterGroup | null = null;
   // Évite qu'un fitBounds() programmatique (sélection de région) ne déclenche
@@ -67,6 +72,25 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       maxZoom: 19,
     }).addTo(this.map);
 
+    // Interactions réelles du visiteur uniquement (les flyTo/fitBounds programmatiques
+    // ne déclenchent ni pointerdown ni wheel).
+    const container = this.mapContainerRef.nativeElement;
+    const onInteract = () => {
+      if (this.interacted) return;
+      this.interacted = true;
+      container.removeEventListener('pointerdown', onInteract);
+      container.removeEventListener('wheel', onInteract);
+      this.userInteracted.emit();
+    };
+    container.addEventListener('pointerdown', onInteract, { passive: true });
+    container.addEventListener('wheel', onInteract, { passive: true });
+
+    // La zone de la carte change de taille (footer qui se replie, rotation du
+    // téléphone…) : Leaflet doit recalculer ses tuiles, sinon une bande grise
+    // apparaît là où la carte s'est agrandie.
+    this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+    this.resizeObserver.observe(container);
+
     this.markerClusterGroup = L.markerClusterGroup();
     this.map.addLayer(this.markerClusterGroup);
 
@@ -81,6 +105,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
     this.map?.remove();
   }
 
