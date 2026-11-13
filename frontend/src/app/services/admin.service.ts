@@ -33,7 +33,15 @@ export class AdminService {
    * validation "à l'aveugle" côté client.
    */
   login(username: string, password: string): Observable<boolean> {
-    const token = btoa(`${username}:${password}`);
+    return this.loginWithToken(btoa(`${username}:${password}`));
+  }
+
+  /**
+   * Même vérification que login(), à partir d'un jeton déjà encodé (base64
+   * "user:pass"). Utilisé par le lien de connexion directe /admin#auth=<jeton>
+   * (widget de bureau), cf. AdminPageComponent.
+   */
+  loginWithToken(token: string): Observable<boolean> {
     const headers = new HttpHeaders({ Authorization: `Basic ${token}` });
 
     return this.http.get(`${API_BASE_URL}/breweries/pending`, { headers }).pipe(

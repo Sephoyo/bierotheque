@@ -92,6 +92,7 @@ docker compose up -d
 - Accessible sur le frontend via `/admin` (pas de lien visible depuis le site public — on y accède en tapant l'URL). Formulaire de connexion puis 4 sections : suggestions en attente (approuver/rejeter), demandes de modification (approuver/rejeter, avec diff actuel/proposé), messages de contact, stats de visite.
 - Auth : un seul compte en mémoire (`config/packages/security.yaml`), identifiants dans `backend/.env` (`ADMIN_USERNAME`/`ADMIN_PASSWORD_HASH`, ce dernier généré via `php bin/console security:hash-password`). HTTP Basic — ne chiffre rien par lui-même, la protection réelle vient du HTTPS une fois déployé.
 - Le token (base64 `user:pass`) est stocké côté frontend en `sessionStorage` (effacé à la fermeture de l'onglet), pas en cookie.
+- Lien de connexion directe : `/admin#auth=<base64 user:pass>` (base64 standard ou URL-safe) connecte sans passer par le formulaire — utilisé par le widget de bureau de l'utilisateur, qui lit les identifiants dans le Trousseau macOS. Le fragment n'est jamais envoyé au serveur et il est effacé de la barre d'adresse (`history.replaceState`) avant même la vérification ; le jeton est validé par le même appel réel que le formulaire (`AdminService.loginWithToken`).
 
 ## Points d'attention
 - Dédupliquer les brasseries lors de l'import (clé `osmId`).

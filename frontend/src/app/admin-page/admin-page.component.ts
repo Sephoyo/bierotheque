@@ -27,6 +27,25 @@ export class AdminPageComponent {
   protected readonly stats = signal<AnalyticsStats | null>(null);
 
   constructor() {
+    // Lien de connexion directe : /admin#auth=<base64 "user:pass">. Le fragment
+    // (#…) n'est jamais envoyé au serveur ; on l'efface aussitôt de la barre
+    // d'adresse et de l'historique avant même de vérifier le jeton.
+    const match = window.location.hash.match(/^#auth=([A-Za-z0-9+/=_-]+)$/);
+    if (match) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      const token = match[1].replace(/-/g, '+').replace(/_/g, '/');
+      this.loggingIn.set(true);
+      this.adminService.loginWithToken(token).subscribe((success) => {
+        this.loggingIn.set(false);
+        if (success) {
+          this.loadAll();
+        } else {
+          this.loginError.set('Lien de connexion invalide.');
+        }
+      });
+      return;
+    }
+
     if (this.adminService.isAuthenticated()) {
       this.loadAll();
     }
