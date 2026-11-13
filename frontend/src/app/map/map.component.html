@@ -1,5 +1,24 @@
 <div #mapContainer class="map-container"></div>
 
-@if (breweryService.error(); as errorMessage) {
+<button
+  type="button"
+  class="locate-button"
+  [class.active]="breweryService.nearbyOrigin()"
+  [class.busy]="locating() || breweryService.nearbyLoading()"
+  (click)="locateMe()"
+  [attr.aria-busy]="locating()"
+  title="Afficher les brasseries autour de moi"
+>
+  <svg class="locate-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <circle cx="12" cy="12" r="3.2" fill="currentColor" />
+    <circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2" />
+    <path d="M12 1.5v3.5M12 19v3.5M1.5 12H5M19 12h3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+  </svg>
+  <span class="locate-label">{{ locating() ? 'Localisation…' : 'Autour de moi' }}</span>
+</button>
+
+@if (locateError(); as message) {
+  <div class="map-error locate-error" role="alert">{{ message }}</div>
+} @else if (breweryService.error(); as errorMessage) {
   <div class="map-error">{{ errorMessage }}</div>
 }

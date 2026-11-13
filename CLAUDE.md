@@ -94,6 +94,11 @@ docker compose up -d
 - Le token (base64 `user:pass`) est stocké côté frontend en `sessionStorage` (effacé à la fermeture de l'onglet), pas en cookie.
 - Lien de connexion directe : `/admin#auth=<base64 user:pass>` (base64 standard ou URL-safe) connecte sans passer par le formulaire — utilisé par le widget de bureau de l'utilisateur, qui lit les identifiants dans le Trousseau macOS. Le fragment n'est jamais envoyé au serveur et il est effacé de la barre d'adresse (`history.replaceState`) avant même la vérification ; le jeton est validé par le même appel réel que le formulaire (`AdminService.loginWithToken`).
 
+## « Autour de moi » (2026-11-13)
+- Bouton sur la carte (`map.component`, sous le zoom) : géolocalisation du navigateur (HTTPS obligatoire), point bleu + cercle de précision, puis `BreweryService.loadNearby()` charge la bbox d'un cercle de 50 km (élargi à 150 km si vide) et cadre la carte sur le visiteur et ses 5 brasseries les plus proches.
+- Liste « Autour de vous » triée par distance (haversine) dans `region-list` (mode nearby, bottom sheet 45vh sur mobile). Les résultats sont gardés à part de `breweries` (`nearbyResults`) pour que la liste ne rétrécisse pas quand la carte recharge la zone visible. Choisir une région ou fermer la liste quitte le mode.
+- Aucun appel backend nouveau : réutilise `GET /api/breweries?bbox=`. La position exacte du visiteur n'est jamais envoyée, seulement une bbox d'environ 100 km de côté.
+
 ## Points d'attention
 - Dédupliquer les brasseries lors de l'import (clé `osmId`).
 - Gérer le cas où `website`/`socialLinks` sont absents dans les données OSM (afficher un message "Site web non disponible").
