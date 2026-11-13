@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, effect, inject, output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, effect, inject, output, signal } from '@angular/core';
 // Import par défaut (pas `import * as L`) : esbuild fige une copie des
 // propriétés de leaflet au moment de l'import namespace, *avant* que
 // 'leaflet.markercluster' ait pu lui ajouter markerClusterGroup — d'où
@@ -9,7 +9,7 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import { Brewery } from '../models/brewery.model';
 import { FrenchRegion } from '../models/region.model';
-import { BreweryService } from '../services/brewery.service';
+import { BreweryService, GeoPoint } from '../services/brewery.service';
 
 const BREWERY_ZOOM = 15;
 
@@ -48,6 +48,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** Émis une fois, à la première interaction du visiteur avec la carte (glisser, zoomer, toucher). */
   readonly userInteracted = output<void>();
   private interacted = false;
+
+  // --- « Autour de moi » ---
+  protected readonly locating = signal(false);
+  protected readonly locateError = signal<string | null>(null);
+  private userLayer: L.LayerGroup | null = null;
+  private locateErrorTimer: ReturnType<typeof setTimeout> | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
   private map: L.Map | null = null;
@@ -61,6 +67,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     effect(() => {
       const breweries = this.breweryService.breweries();
       this.renderMarkers(breweries);
+    });
+
+    // Point bleu de position : affiché tant que le mode « Autour de moi » est actif
+    effect(() => {
+      const origin = this.breweryService.nearbyOrigin();
+      this.renderUserPosition(origin);
     });
   }
 
@@ -76,11 +88,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     // ne déclenchent ni pointerdown ni wheel).
     const container = this.mapContainerRef.nativeElement;
     const onInteract = () => {
-      if (this.interacted) return;
-      this.interacted = true;
       container.removeEventListener('pointerdown', onInteract);
       container.removeEventListener('wheel', onInteract);
-      this.userInteracted.emit();
+      this.markInteracted();
     };
     container.addEventListener('pointerdown', onInteract, { passive: true });
     container.addEventListener('wheel', onInteract, { passive: true });
@@ -106,6 +116,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
+    if (this.locateErrorTimer) {
+      clearTimeout(this.locateErrorTimer);
+    }
     this.map?.remove();
   }
 
@@ -119,6 +132,109 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       [south, west],
       [north, east],
     ]);
+  }
+
+  private markInteracted(): void {
+    if (this.interacted) return;
+    this.interacted = true;
+    this.userInteracted.emit();
+  }
+
+  /** Bouton « Autour de moi » : demande la position au navigateur puis cadre la carte. */
+  protected locateMe(): void {
+    if (this.locating()) {
+      return;
+    }
+    this.markInteracted(); // explorer autour de soi = explorer la carte (replie le footer)
+    if (!('geolocation' in navigator)) {
+      this.showLocateError("Votre navigateur ne permet pas de vous localiser.");
+      return;
+    }
+    this.locating.set(true);
+    this.locateError.set(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const origin: GeoPoint = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        };
+        this.breweryService.selectedBrewery.set(null);
+        this.breweryService.loadNearby(origin).subscribe((nearby) => {
+          this.locating.set(false);
+          this.fitToNearby(origin, nearby.slice(0, 5).map((n) => n.brewery));
+        });
+      },
+      (error) => {
+        this.locating.set(false);
+        this.showLocateError(
+          error.code === error.PERMISSION_DENIED
+            ? 'Localisation refusée : autorisez-la dans les réglages de votre navigateur pour voir les brasseries proches.'
+            : error.code === error.TIMEOUT
+              ? 'La localisation a pris trop de temps, réessayez.'
+              : 'Impossible de déterminer votre position.',
+        );
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
+    );
+  }
+
+  /** Cadre la carte sur la position du visiteur et ses brasseries les plus proches. */
+  private fitToNearby(origin: GeoPoint, closest: Brewery[]): void {
+    if (!this.map) {
+      return;
+    }
+    // Les données sont déjà chargées par loadNearby() : on évite que le
+    // moveend du cadrage ne les remplace par la seule zone visible.
+    this.suppressNextMoveEnd = true;
+    if (closest.length === 0) {
+      this.map.flyTo([origin.lat, origin.lng], 11);
+      return;
+    }
+    const bounds = L.latLngBounds([[origin.lat, origin.lng], ...closest.map((b) => [b.latitude, b.longitude] as L.LatLngTuple)]);
+    // Sur mobile, la liste « Autour de vous » occupe le bas de l'écran (45vh,
+    // cf. region-list) : on garde les brasseries cadrées au-dessus d'elle.
+    const container = this.map.getContainer();
+    const sheet = window.matchMedia('(max-width: 768px)').matches
+      ? Math.max(0, container.getBoundingClientRect().bottom - window.innerHeight * 0.55)
+      : 0;
+    this.map.flyToBounds(bounds, { paddingTopLeft: [48, 48], paddingBottomRight: [48, 48 + sheet], maxZoom: 14 });
+  }
+
+  private renderUserPosition(origin: GeoPoint | null): void {
+    if (!this.map) {
+      return;
+    }
+    this.userLayer?.remove();
+    this.userLayer = null;
+    if (!origin) {
+      return;
+    }
+    const accuracy = L.circle([origin.lat, origin.lng], {
+      radius: Math.min(origin.accuracy, 2000),
+      color: '#2f7cf6',
+      weight: 1,
+      fillColor: '#2f7cf6',
+      fillOpacity: 0.12,
+      interactive: false,
+    });
+    const dot = L.circleMarker([origin.lat, origin.lng], {
+      radius: 8,
+      color: '#ffffff',
+      weight: 3,
+      fillColor: '#2f7cf6',
+      fillOpacity: 1,
+    }).bindTooltip('Vous êtes ici', { direction: 'top', offset: [0, -8] });
+    this.userLayer = L.layerGroup([accuracy, dot]).addTo(this.map);
+  }
+
+  private showLocateError(message: string): void {
+    this.locateError.set(message);
+    if (this.locateErrorTimer) {
+      clearTimeout(this.locateErrorTimer);
+    }
+    this.locateErrorTimer = setTimeout(() => this.locateError.set(null), 7000);
   }
 
   flyToBrewery(brewery: Brewery): void {

@@ -38,6 +38,7 @@ export class MapPageComponent {
   }
 
   protected onRegionSelected(region: FrenchRegion, map: MapComponent): void {
+    this.breweryService.clearNearby();
     this.breweryService.selectedRegion.set(region.name);
     this.breweryService.loadByRegion(region.name);
     map.flyToRegion(region);

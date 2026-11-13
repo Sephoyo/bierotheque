@@ -23,3 +23,75 @@
   padding: 8px 16px;
   box-shadow: var(--shadow-soft);
 }
+
+// --- Bouton « Autour de moi » (sous les boutons de zoom Leaflet) ---
+.locate-button {
+  position: absolute;
+  top: 84px;
+  left: 10px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px 0 9px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+  border-radius: 6px;
+  background-color: var(--color-cream);
+  color: var(--color-hop-brown);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+
+  &:hover {
+    background-color: #fff6e6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+
+  &.active .locate-icon {
+    color: #2f7cf6;
+  }
+
+  &.busy .locate-icon {
+    animation: locate-pulse 1s ease-in-out infinite;
+  }
+
+  // Petit écran : bouton carré, icône seule
+  @media (max-width: 560px) {
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+
+    .locate-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+  }
+}
+
+@keyframes locate-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.locate-error {
+  max-width: min(420px, calc(100% - 32px));
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locate-button.busy .locate-icon {
+    animation: none;
+  }
+}

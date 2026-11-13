@@ -1,4 +1,40 @@
-@if (breweryService.selectedRegion(); as region) {
+@if (breweryService.nearbyOrigin()) {
+  <!-- Mode « Autour de moi » : brasseries triées par distance -->
+  <aside class="region-list nearby parchment-panel" aria-label="Brasseries autour de vous">
+    <header>
+      <h2>Autour de vous</h2>
+      <button type="button" class="close-button" (click)="close()" aria-label="Fermer">&times;</button>
+    </header>
+
+    @if (breweryService.nearbyLoading()) {
+      <p class="count">Recherche des brasseries proches…</p>
+    } @else {
+      <p class="count">
+        @if (breweryService.nearbyBreweries().length; as count) {
+          {{ count }} brasserie(s) à moins de {{ breweryService.nearbyRadiusKm() }} km
+        } @else {
+          Aucune brasserie connue à moins de {{ breweryService.nearbyRadiusKm() }} km.
+        }
+      </p>
+    }
+
+    <ul>
+      @for (item of breweryService.nearbyBreweries(); track item.brewery.id) {
+        <li>
+          <button type="button" class="with-distance" (click)="onSelect(item.brewery)">
+            <span class="text">
+              <span class="name">{{ item.brewery.name }}</span>
+              @if (item.brewery.city) {
+                <span class="city">{{ item.brewery.city }}</span>
+              }
+            </span>
+            <span class="distance">{{ formatDistance(item.distanceKm) }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+} @else if (breweryService.selectedRegion(); as region) {
   <aside class="region-list parchment-panel">
     <header>
       <h2>{{ region }}</h2>
