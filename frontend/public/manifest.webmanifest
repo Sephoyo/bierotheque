@@ -1,0 +1,15 @@
+{
+  "name": "Bièrothèque — la carte des brasseries artisanales de France",
+  "short_name": "Bièrothèque",
+  "description": "Toutes les brasseries artisanales de France sur une carte interactive.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5e9d3",
+  "theme_color": "#c68a2e",
+  "icons": [
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
