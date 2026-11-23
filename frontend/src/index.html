@@ -10,6 +10,9 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#c68a2e">
+  <meta name="robots" content="index, follow">
 
   <!-- Open Graph / réseaux sociaux -->
   <meta property="og:type" content="website">
@@ -17,13 +20,33 @@
   <meta property="og:description" content="Toutes les brasseries artisanales de France sur une carte interactive : localisation, sites web, réseaux sociaux.">
   <meta property="og:url" content="https://bierotheque.josephbaert.fr/">
   <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="Bièrothèque">
+  <meta property="og:image" content="https://bierotheque.josephbaert.fr/icon-512.png">
   <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://bierotheque.josephbaert.fr/icon-512.png">
   <meta name="twitter:title" content="Bièrothèque — la carte des brasseries artisanales de France">
   <meta name="twitter:description" content="Toutes les brasseries artisanales de France sur une carte interactive.">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Bièrothèque",
+    "alternateName": "Bierotheque",
+    "url": "https://bierotheque.josephbaert.fr/",
+    "inLanguage": "fr-FR",
+    "description": "Carte interactive des brasseries artisanales de France : localisation, sites web, réseaux sociaux."
+  }
+  </script>
 
   <script src="env.js"></script>
 </head>
 <body>
-  <app-root></app-root>
+  <!-- Texte statique lisible par les robots qui n'exécutent pas le JS ;
+       Angular le remplace au démarrage de l'app. -->
+  <app-root>
+    <h1>Bièrothèque — la carte des brasseries artisanales de France</h1>
+    <p>Bièrothèque recense les brasseries artisanales et microbrasseries de France sur une carte interactive : localisation, sites web et réseaux sociaux. Trouvez la brasserie la plus proche de chez vous, région par région.</p>
+  </app-root>
 </body>
 </html>
